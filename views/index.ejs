@@ -3,66 +3,105 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CDN Server</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      form {
-        margin-bottom: 20px;
-      }
-      .file-list {
-        margin-top: 20px;
-      }
-      .file-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-      }
-      .file-actions {
-        display: flex;
-        gap: 10px;
-      }
-      button {
-        cursor: pointer;
-      }
-    </style>
+    <title>File Upload System</title>
   </head>
   <body>
-    <h1>CDN Server</h1>
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-      <label for="file">Select file to upload:</label>
-      <input type="file" name="file" id="file" required />
+    <h1>File Management System</h1>
+
+    <!-- Upload Form -->
+    <h2>Upload Image</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="file" id="fileInput" required />
       <button type="submit">Upload</button>
     </form>
 
-    <h2>Uploaded Files</h2>
-    <div class="file-list">
-      <% files.forEach((file) => { %>
-      <div class="file-item">
-        <a href="<%= file.url %>" target="_blank"><%= file.name %></a>
-        <div class="file-actions">
-          <form
-            action="/delete/<%= file.name %>"
-            method="POST"
-            style="display: inline"
-          >
-            <button type="submit">Delete</button>
-          </form>
-          <form
-            action="/update/<%= file.name %>"
-            method="POST"
-            enctype="multipart/form-data"
-            style="display: inline"
-          >
-            <input type="file" name="file" required />
-            <button type="submit">Update</button>
-          </form>
-        </div>
-      </div>
-      <% }); %>
+    <h2>Uploaded Images</h2>
+    <div id="imageGallery"></div>
+
+    <!-- JavaScript -->
+    <script>
+      const API_BASE = "http://localhost:3000/api";
+
+      const uploadForm = document.getElementById("uploadForm");
+      const fileInput = document.getElementById("fileInput");
+      const imageGallery = document.getElementById("imageGallery");
+
+      // Fetch and display images
+      async function loadImages() {
+        const res = await fetch(`${API_BASE}/files`);
+        const images = await res.json();
+
+        imageGallery.innerHTML = images
+          .map(
+            (img) => `
+    <div>
+      <img src="/files/${img}" alt="${img}" style="width: 100px; height: auto;">
+      <button onclick="deleteImage('${img}')">Delete</button>
+      <form onsubmit="updateImage(event, '${img}')">
+        <input type="file" name="file" required>
+        <button type="submit">Update</button>
+      </form>
     </div>
+  `
+          )
+          .join("");
+      }
+
+      // Upload a new image
+      uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        const res = await fetch(`${API_BASE}/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          alert("Image uploaded successfully");
+          loadImages();
+        } else {
+          alert("Image upload failed");
+        }
+      });
+
+      // Delete an image
+      async function deleteImage(filename) {
+        const res = await fetch(`${API_BASE}/delete/${filename}`, {
+          method: "DELETE",
+        });
+
+        if (res.ok) {
+          alert("Image deleted successfully");
+          loadImages();
+        } else {
+          alert("Failed to delete image");
+        }
+      }
+
+      // Update an image
+      async function updateImage(e, oldFilename) {
+        e.preventDefault();
+        const formData = new FormData();
+        const fileInput = e.target.querySelector('input[type="file"]');
+        formData.append("file", fileInput.files[0]);
+
+        const res = await fetch(`${API_BASE}/update/${oldFilename}`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          alert("Image updated successfully");
+          loadImages();
+        } else {
+          alert("Failed to update image");
+        }
+      }
+
+      // Initialize gallery
+      loadImages();
+    </script>
   </body>
 </html>

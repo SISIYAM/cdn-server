@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CDN Server</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      form {
+        margin-bottom: 20px;
+      }
+      .file-list {
+        margin-top: 20px;
+      }
+      .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .file-actions {
+        display: flex;
+        gap: 10px;
+      }
+      button {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CDN Server</h1>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+      <label for="file">Select file to upload:</label>
+      <input type="file" name="file" id="file" required />
+      <button type="submit">Upload</button>
+    </form>
+
+    <h2>Uploaded Files</h2>
+    <div class="file-list">
+      <% files.forEach((file) => { %>
+      <div class="file-item">
+        <a href="<%= file.url %>" target="_blank"><%= file.name %></a>
+        <div class="file-actions">
+          <form
+            action="/delete/<%= file.name %>"
+            method="POST"
+            style="display: inline"
+          >
+            <button type="submit">Delete</button>
+          </form>
+          <form
+            action="/update/<%= file.name %>"
+            method="POST"
+            enctype="multipart/form-data"
+            style="display: inline"
+          >
+            <input type="file" name="file" required />
+            <button type="submit">Update</button>
+          </form>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+  </body>
+</html>

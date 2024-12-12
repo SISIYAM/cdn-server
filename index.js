@@ -2,9 +2,11 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-
+const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors());
 
 const UPLOAD_DIR = path.join(__dirname, "uploads");
 
@@ -82,7 +84,7 @@ app.delete("/api/delete/:filename", (req, res) => {
     res.status(200).json({ message: "File deleted successfully" });
   });
 });
-// Get all uploaded files
+// get all uploaded files
 app.get("/api/files", (req, res) => {
   fs.readdir(UPLOAD_DIR, (err, files) => {
     if (err) {

@@ -51,6 +51,26 @@ app.post("/upload", upload.single("file"), (req, res) => {
   res.redirect("/");
 });
 
+app.post("/update/:filename", upload.single("file"), (req, res) => {
+  const oldFilename = req.params.filename;
+  const oldFilePath = path.join(UPLOAD_DIR, oldFilename);
+
+  if (!req.file) {
+    return res.status(400).json({ error: "No file provided for update" });
+  }
+
+  // Delete the old file
+  fs.unlink(oldFilePath, (err) => {
+    if (err) {
+      console.error(`Failed to delete old file: ${err.message}`);
+      return res.status(404).json({ error: "Original file not found" });
+    }
+
+    console.log(`File ${oldFilename} replaced with ${req.file.filename}`);
+    res.redirect("/");
+  });
+});
+
 app.use("/files", express.static(UPLOAD_DIR));
 
 app.post("/delete/:filename", (req, res) => {
